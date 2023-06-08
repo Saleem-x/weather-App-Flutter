@@ -1,0 +1,84 @@
+
+  getcurrentlocation() async {
+    // permission();
+    // Position position = await Geolocator.getCurrentPosition(
+    //     desiredAccuracy: LocationAccuracy.low,
+    //     forceAndroidLocationManager: true);
+    // getcurrentcity(position);
+    // setState(() {
+    //   isLoaded = true;
+    // });
+    // if (position != null) {
+    //   log('lat${position.latitude},lng${position.longitude}');
+    // } else {
+    //   log('no data');
+    // }
+    getMain();
+  }
+
+  permission() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+    log(permission.name);
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+  }
+
+  getcityweather(String cityname) async {
+    var client = http.Client();
+    var uri = '${domain}q=$cityname&appid=$apikey';
+
+    var url = Uri.parse(uri);
+    var response = await client.get(url);
+    if (response.statusCode == 200) {
+      var data = response.body;
+      var decodedata = json.decode(data);
+      // log(response.body);
+      updateui(data: decodedata);
+    } else {
+      return response.statusCode;
+    }
+  }
+
+  getcurrentcity(Position position) async {
+    var client = http.Client();
+    var uri =
+        '${domain}lat=${position.latitude}&lon=${position.longitude}&appid=$apikey';
+
+    var url = Uri.parse(uri);
+    var response = await client.get(url);
+    if (response.statusCode == 200) {
+      var data = response.body;
+      var decodedata = json.decode(data);
+      // log(response.body);
+      updateui(data: decodedata);
+    } else {
+      return response.statusCode;
+    }
+  }
+
+  updateui({var data}) {
+    setState(() {});
+    if (data == null) {
+      temp = 0;
+      presu = 0;
+      humi = 0;
+      cover = 0;
+      cityname = 'not available';
+      discription = 'nothing';
+      speed = 0;
+    } else {
+      temp = data['main']['temp'] - 273;
+      presu = data['main']['pressure'];
+      humi = data['main']['humidity'];
+      cover = data['clouds']['all'];
+      cityname = data['name'];
+      country = data['sys']['country'];
+      speed = data['wind']['speed'];
+      isLoaded = true;
+      setState(() {});
+    }
+  }
